@@ -6,9 +6,10 @@ import openai
 import pickle as pkl
 
 from topics import select_topic
+from tqdm import tqdm
 
 # Input OpenAI API key
-openai.api_key = "<YOUR OPENAPI KEY>"
+openai.api_key = "<YOUR OPENAI API KEY>"
 
 CONVERSATION_NUM = 200
         
@@ -56,7 +57,7 @@ def lambda_handler():
     prompt = starting_prompt
     chat_history = ""
 
-    for turn_num in range(convo_length):
+    for turn_num in tqdm(range(convo_length)):
         chatbot_output = openai.Completion.create(
             engine="text-davinci-003", 
             prompt=prompt,
@@ -66,7 +67,7 @@ def lambda_handler():
             logprobs=10,
             n=1
         )
-        print("Made one request")
+        
         chatbot_response = chatbot_output.choices[0].text.strip()
         if chatbot_response.startswith("chatbot:") or chatbot_response.startswith("Chatbot:"):
             chatbot_response = chatbot_response[8:]
@@ -83,7 +84,6 @@ def lambda_handler():
             logprobs=10,
             n=1
         )
-        print("made 2 requests")
         
         chat_history += "user: " + human_output.choices[0].text.strip() + "\n"
         prompt = chat_history + " " + chatbot_reminder + " You respond: "
@@ -105,7 +105,6 @@ if __name__ == '__main__':
         conv = lambda_handler()
         conv_dict[i] = conv
         pkl.dump(conv_dict, open("conv_dict.pkl", "wb"))
-    
             
             
             
